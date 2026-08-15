@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>理科 オリジナル問題（練習用）</title>
+<style>
+  :root {
+    --main: #2f8f5f;
+    --main-dark: #1c5c3a;
+    --bg: #f4f6fb;
+    --card: #ffffff;
+    --correct: #1a7a3c;
+    --wrong: #b3261e;
+    --lead-bg: #f2f4f8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+    background: var(--bg);
+    margin: 0;
+    padding: 0;
+    color: #222;
+    line-height: 1.7;
+  }
+  header {
+    background: linear-gradient(135deg, var(--main-dark), var(--main));
+    color: white;
+    padding: 22px 16px 26px;
+    text-align: center;
+  }
+  header h1 { margin: 0 0 4px; font-size: 1.4rem; }
+  header p { margin: 0; font-size: 0.85rem; opacity: 0.9; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 16px; }
+  .timer-bar {
+    background: white; border-radius: 10px; padding: 10px 14px; margin: -16px auto 16px;
+    max-width: 760px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .timer-bar span { font-size: 0.85rem; color: #555; }
+  #timerDisplay { font-weight: bold; color: var(--main-dark); font-size: 1.1rem; }
+  .timer-bar button {
+    background: var(--main); color: white; border: none; border-radius: 6px;
+    padding: 6px 12px; font-size: 0.8rem; cursor: pointer;
+  }
+  .name-bar {
+    background: white; border-radius: 10px; padding: 10px 14px; margin: 0 auto 16px;
+    max-width: 760px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.85rem; color: #555;
+  }
+  .name-bar input { border: 1px solid #ccc; border-radius: 6px; padding: 5px 8px; font-size: 0.85rem; }
+  .section-card {
+    background: var(--card); border-radius: 12px; padding: 16px 18px; margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .section-title {
+    background: var(--main); color: white; padding: 10px 14px; border-radius: 8px;
+    font-weight: bold; font-size: 1.02rem; margin-bottom: 12px;
+  }
+  .section-lead {
+    background: var(--lead-bg); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px;
+    font-size: 0.92rem; color: #444;
+  }
+  .item { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px dashed #ddd; }
+  .item:last-child { border-bottom: none; margin-bottom: 0; }
+  .item-lead { background: var(--lead-bg); border-radius: 8px; padding: 8px 10px; font-size: 0.88rem; color: #555; margin-bottom: 6px; }
+  .item-title { font-weight: bold; font-size: 0.88rem; color: var(--main-dark); margin-bottom: 2px; }
+  .qtext { font-weight: bold; margin-bottom: 8px; font-size: 0.97rem; }
+  .qtag { display:inline-block; font-size:0.72rem; background:#eaf5ee; color:var(--main-dark); border-radius:4px; padding:1px 6px; margin-right:6px; font-weight:normal; }
+  .choice-label {
+    display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px; border-radius: 8px;
+    margin-bottom: 6px; cursor: pointer; border: 1px solid #dcebe1; transition: background 0.15s;
+  }
+  .choice-label:hover { background: #f2f9f4; }
+  .choice-label input { margin-top: 3px; flex-shrink: 0; }
+  .choice-mark { font-weight: bold; color: var(--main-dark); margin-right: 2px; }
+  textarea {
+    width: 100%; min-height: 70px; border-radius: 8px; border: 1px solid #ccc; padding: 8px;
+    font-family: inherit; font-size: 0.92rem; resize: vertical;
+  }
+  .reveal-btn, .self-btn {
+    margin-top: 6px; background: #eaf5ee; color: var(--main-dark); border: 1px solid var(--main);
+    border-radius: 6px; padding: 5px 10px; font-size: 0.8rem; cursor: pointer; margin-right: 6px;
+  }
+  .self-btn.active-ok { background: var(--correct); color: white; border-color: var(--correct); }
+  .self-btn.active-ng { background: var(--wrong); color: white; border-color: var(--wrong); }
+  .sample-box {
+    display: none; margin-top: 8px; background: #eafaf0; border-left: 4px solid var(--correct);
+    padding: 8px 10px; font-size: 0.88rem; border-radius: 4px;
+  }
+  .result-box { display: none; margin-top: 8px; padding: 8px 10px; border-radius: 6px; font-size: 0.88rem; }
+  .result-correct { background: #eafaf0; border-left: 4px solid var(--correct); color: #185c30; }
+  .result-wrong { background: #fdecea; border-left: 4px solid var(--wrong); color: #8c2a22; }
+  .grade-bar {
+    position: sticky; bottom: 0; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
+    padding: 12px 16px; text-align: center; z-index: 10; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;
+  }
+  .grade-btn {
+    background: var(--main); color: white; border: none; border-radius: 24px;
+    padding: 12px 28px; font-size: 1rem; font-weight: bold; cursor: pointer;
+  }
+  .save-btn {
+    background: #1a7a3c; color: white; border: none; border-radius: 24px;
+    padding: 12px 28px; font-size: 1rem; font-weight: bold; cursor: pointer; display:none;
+  }
+  .grade-btn:active, .save-btn:active { transform: scale(0.97); }
+  #scoreSummary {
+    max-width: 760px; margin: 0 auto 16px; background: white; border-radius: 12px; padding: 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: none;
+  }
+  #scoreSummary .headline { text-align:center; }
+  #scoreSummary .big { font-size: 2rem; font-weight: bold; color: var(--main-dark); }
+  #fieldTable { width:100%; border-collapse: collapse; margin-top: 14px; font-size: 0.85rem; }
+  #fieldTable th, #fieldTable td { border-bottom: 1px solid #eee; padding: 6px 4px; text-align: left; }
+  #fieldTable th { color: #888; font-weight: normal; }
+  .weak-tag { display:inline-block; background:#fdecea; color:var(--wrong); border-radius:4px; padding:2px 7px; margin:2px 4px 2px 0; font-size:0.78rem; }
+  .footer-note { text-align: center; font-size: 0.75rem; color: #999; padding: 20px 16px 40px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>理科　オリジナル問題　第2回（弱点特化）</h1>
+  <p>1回目の結果分析にもとづく弱点重点セット</p>
+</header>
+
+<div style="max-width:760px;margin:12px auto 4px;padding:0 16px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+  <a href="index.html" style="background:#eafaf0;color:var(--main-dark);border:1px solid var(--main);border-radius:20px;padding:6px 14px;font-size:0.8rem;text-decoration:none;font-weight:bold;">🏠 トップへ</a>
+  <a href="理科_オリジナル問題_練習用.html" style="background:#eafaf0;color:var(--main-dark);border:1px solid var(--main);border-radius:20px;padding:6px 14px;font-size:0.8rem;text-decoration:none;font-weight:bold;">都立 第1回</a>
+  <a href="理科_オリジナル問題_練習用_第2回.html" style="background:var(--main);color:white;border:1px solid var(--main);border-radius:20px;padding:6px 14px;font-size:0.8rem;text-decoration:none;font-weight:bold;">都立 第2回</a>
+  <a href="V模擬対策/V模擬対策_理科_練習用.html" style="background:#eafaf0;color:var(--main-dark);border:1px solid var(--main);border-radius:20px;padding:6px 14px;font-size:0.8rem;text-decoration:none;font-weight:bold;">Vもぎ対策</a>
+</div>
+
+<div class="timer-bar">
+  <span>目安時間 50分　経過：<span id="timerDisplay">00:00</span></span>
+  <div>
+    <button onclick="startTimer()">開始</button>
+    <button onclick="resetTimer()">リセット</button>
+  </div>
+</div>
+
+<div class="name-bar">
+  名前：<input type="text" id="studentName" placeholder="（任意）記録用の名前">
+</div>
+
+<div class="wrap" id="quizRoot"></div>
+
+<div id="scoreSummary">
+  <div class="headline">
+    <div>選択式の正答数</div>
+    <div class="big"><span id="scoreNum">0</span> / <span id="scoreTotal">0</span></div>
+    <div style="font-size:0.85rem;color:#666;margin-top:6px;">記述問題は解答例と見比べて、問題ごとの「できた／もう一息」ボタンで自己評価してください。</div>
+  </div>
+  <table id="fieldTable"><thead><tr><th>分野</th><th>正答</th><th>問題数</th><th>正答率</th></tr></thead><tbody></tbody></table>
+  <div id="weakList" style="margin-top:10px;"></div>
+</div>
+
+<div class="grade-bar">
+  <button class="grade-btn" onclick="gradeAll()">採点する</button>
+  <button class="save-btn" id="saveBtn" onclick="saveResults()">結果を保存する</button>
+</div>
+
+<div class="footer-note">この問題は過去問そのものではなく、出題傾向分析に基づき新規作成したオリジナル問題です。保存した結果ファイルをClaudeに見せると、苦手分野に合わせた次の問題を作れます。</div>
+
+<script>
+const SECTIONS = [{"id": "q1", "title": "大問1　次の各問に答えよ。", "lead": null, "items": [{"kind": "choice", "field": "生物", "topic": "遺伝・生殖（体細胞分裂と減数分裂）", "no": 1, "q": "体細胞分裂と減数分裂について述べたものとして適切なのは、次のうちではどれか。", "choices": ["体細胞分裂では染色体数は半分になり、減数分裂では変化しない。", "体細胞分裂では染色体数は変化せず、減数分裂では半分になる。", "体細胞分裂・減数分裂のどちらも染色体数は半分になる。", "体細胞分裂・減数分裂のどちらも染色体数は変化しない。"], "answer": 1, "explain": "体細胞分裂では分裂前後で染色体数は変わらない。減数分裂（生殖細胞をつくる分裂）だけ染色体数が半分になる。", "lead": null, "title": null}, {"kind": "choice", "field": "化学", "topic": "気体の性質（水素とほかの気体の判別）", "no": 2, "q": "次のうち、水素の性質として適切なのは、次のうちではどれか。", "choices": ["色もにおいもなく、物質の中で最も密度が小さい。マッチの火を近づけると音をたてて燃える。", "色もにおいもなく、空気より重い。石灰水を白く濁らせる。", "刺激臭があり、水に非常によく溶け、その水溶液はアルカリ性を示す。", "色もにおいもなく、空気の約78％を占める。"], "answer": 0, "explain": "アは水素の説明。イは二酸化炭素、ウはアンモニア、エは窒素の説明。1回目に気体Aの性質を選ぶ問題を間違えているので、代表的な気体の性質を整理しておこう。", "lead": null, "title": null}, {"kind": "choice", "field": "物理", "topic": "光の屈折", "no": 3, "q": "空気中から水中へ進む光が水面で屈折するときの様子について述べたものとして適切なのは、次のうちではどれか。", "choices": ["屈折角は入射角より大きくなる。", "屈折角は入射角より小さくなる。", "屈折角と入射角は常に等しい。", "光は水面ですべて反射し、水中には進まない。"], "answer": 1, "explain": "空気中から水中（密な物質）へ進むとき、光は屈折して入射角より屈折角の方が小さくなる。", "lead": null, "title": null}, {"kind": "choice", "field": "化学", "topic": "化学反応式（分解反応）", "no": 4, "q": "酸化銀を加熱すると、銀と気体Bに分解する。この反応を表す化学反応式として適切なのは、次のうちではどれか。", "choices": ["2Ag2O → 4Ag + O2", "Ag2O → 2Ag + O2", "2Ag2O → 4Ag + O", "Ag2O → Ag + O2"], "answer": 0, "explain": "酸化銀の分解を表す化学反応式は 2Ag2O → 4Ag + O2。左右で銀原子4個、酸素原子2個になっているか係数を確認しよう。", "lead": null, "title": null}, {"kind": "choice", "field": "地学", "topic": "天体（南中高度の公式）", "no": 5, "q": "夏至の日の太陽の南中高度は、観測地点の緯度をa、地軸の傾きを23.4°とすると、次のうちどれで表されるか。", "choices": ["90°－a－23.4°", "90°－a＋23.4°", "90°＋a－23.4°", "90°＋a＋23.4°"], "answer": 1, "explain": "春分・秋分の南中高度は90°－緯度。夏至はそれより地軸の傾きの分だけ高くなるので90°－a＋23.4°。1回目に南中高度の式を間違えているので、公式を作れるようにしておこう。", "lead": null, "title": null}, {"kind": "choice", "field": "生物", "topic": "光合成の対照実験", "no": 6, "q": "植物の葉の一部をアルミニウムはくでおおって光を当てた後、ヨウ素液の反応を調べる実験について、光合成に光が必要であることを確認するために比較する部分の組み合わせとして適切なのは、次のうちではどれか。", "choices": ["アルミニウムはくでおおった部分と、おおわなかった部分", "葉の表側と裏側", "実験前の葉と実験後の葉", "大きい葉と小さい葉"], "answer": 0, "explain": "光を当てた部分（おおわなかった部分）と当てなかった部分（おおった部分）を比較することで、光合成に光が必要なことを確認できる。", "lead": null, "title": null}]}, {"id": "q2", "title": "大問2　生徒が作成したレポートを読み、次の各問に答えよ。", "lead": null, "items": [{"kind": "choice", "field": "化学", "topic": "水溶液の濃度計算", "no": 1, "q": "この食塩水の質量パーセント濃度として適切なのは、次のうちではどれか。", "choices": ["9%", "10%", "11%", "20%"], "answer": 1, "explain": "質量パーセント濃度＝溶質の質量÷水溶液全体の質量×100＝10÷(90+10)×100＝10%。1回目は水溶液全体の質量ではなく水の質量で割ってしまうミスがあったので、「溶質÷（水＋溶質）」の形を覚えよう。", "lead": "水90gに食塩10gを完全に溶かして食塩水をつくった。", "title": "＜レポート1＞ 食塩水の濃度について"}, {"kind": "choice", "field": "物理", "topic": "電力量計算", "no": 2, "q": "この間に消費した電力量として適切なのは、次のうちではどれか。", "choices": ["2400J", "14400J", "144000J", "1440000J"], "answer": 2, "explain": "電力量＝電力×時間＝800W×180秒＝144000J。1回目は2分を60秒のまま計算してしまったミスがあったので、「分→秒」の変換（×60）を忘れないようにしよう。", "lead": "「100V－800W」と表示された電気ポットを100Vの電源で3分間使用した。", "title": "＜レポート2＞ 電気ポットの消費電力について"}, {"kind": "choice", "field": "地学", "topic": "化石（示準化石）", "no": 3, "q": "この化石からわかることとして適切なのは、次のうちではどれか。", "choices": ["この地層があたたかく浅い海で堆積した。", "この地層が中生代に堆積した。", "この地層が河口付近で堆積した。", "この地層が寒冷な気候の時代に堆積した。"], "answer": 1, "explain": "アンモナイトは、地層が堆積した時代がわかる示準化石で、中生代の代表的な化石。アは示相化石の考え方なので、アンモナイト（示準化石）の説明としては不適切。", "lead": "ある地層からアンモナイトの化石が見つかった。", "title": "＜レポート3＞ 地層から見つかった化石について"}, {"kind": "choice", "field": "生物", "topic": "血液循環", "no": 4, "q": "肺で酸素を受け取った直後の血液が最初にもどる心臓の部屋として適切なのは、次のうちではどれか。", "choices": ["右心房", "右心室", "左心房", "左心室"], "answer": 2, "explain": "肺で酸素を受け取った血液（動脈血）は肺静脈を通って左心房にもどり、その後左心室から全身に送り出される。", "lead": "ヒトの血液は、肺で酸素を受け取ったあと心臓にもどり、全身に送り出される。", "title": "＜レポート4＞ 血液の循環について"}]}, {"id": "q3", "title": "3　太陽の南中高度について、次の各問に答えよ。", "lead": "日本のある地点（北緯35°、地軸の傾き23.4°）で、季節による太陽の南中高度の変化を考える。", "items": [{"kind": "choice", "field": "地学", "topic": "天体（南中高度の公式）", "no": 1, "q": "冬至の日の太陽の南中高度を表す式として適切なのは、次のうちではどれか。", "choices": ["90°－a－23.4°", "90°－a＋23.4°", "90°＋a－23.4°", "90°＋a＋23.4°"], "answer": 0, "explain": "冬至の南中高度＝90°－緯度－23.4°。地軸が太陽と反対方向に傾くため、春分・秋分より低くなる。", "lead": null, "title": null}, {"kind": "choice", "field": "地学", "topic": "天体（南中高度の計算）", "no": 2, "q": "北緯35°のこの地点での冬至の日の太陽の南中高度は何度か。", "choices": ["31.6°", "55°", "78.4°", "21.6°"], "answer": 0, "explain": "90－35－23.4＝31.6°。", "lead": null, "title": null}, {"kind": "write", "field": "地学", "topic": "天体（地軸と昼の長さ）", "no": 3, "q": "冬至の日は、夏至の日と比べて昼の長さが短くなる。その理由を、「地軸」という語句を用いて簡単に書け。", "sample": "地軸が傾いたまま公転しているため、冬至の日は北半球が太陽と反対の方向に傾き、太陽が出ている時間（昼の長さ）が短くなるから。"}]}, {"id": "q4", "title": "4　植物の光合成と呼吸について、次の各問に答えよ。", "lead": "植物の葉における光合成と呼吸について調べた。", "items": [{"kind": "choice", "field": "生物", "topic": "光合成（気体の出入り）", "no": 1, "q": "光合成で植物が取り入れる物質と放出する物質の組み合わせとして適切なのは、次のうちではどれか。", "choices": ["取り入れる：酸素／放出する：二酸化炭素", "取り入れる：二酸化炭素／放出する：酸素", "取り入れる：二酸化炭素／放出する：二酸化炭素", "取り入れる：酸素／放出する：酸素"], "answer": 1, "explain": "光合成では二酸化炭素と水を材料にデンプンと酸素をつくる。取り入れるのは二酸化炭素、放出するのは酸素。", "lead": null, "title": null}, {"kind": "choice", "field": "生物", "topic": "呼吸のタイミング", "no": 2, "q": "植物の呼吸について述べたものとして適切なのは、次のうちではどれか。", "choices": ["呼吸は昼間だけ行われる。", "呼吸は光が当たっているときだけ行われる。", "呼吸は昼夜を問わず常に行われている。", "呼吸は光合成が盛んなときだけ行われる。"], "answer": 2, "explain": "植物は光合成だけでなく、動物と同じように昼夜を問わず常に呼吸を行っている。", "lead": null, "title": null}, {"kind": "choice", "field": "生物", "topic": "光合成の対照実験", "no": 3, "q": "暗い部屋に一晩置いた鉢植えの葉の一部をアルミニウムはくでおおい、その後光を十分に当てた。ヨウ素液の反応を調べたとき、デンプンができていないと予想される部分として適切なのは、次のうちではどれか。", "choices": ["アルミニウムはくでおおった部分", "おおわなかった部分", "葉全体", "どの部分にもデンプンはできない"], "answer": 0, "explain": "アルミニウムはくでおおった部分には光が当たらないため光合成が行われず、デンプンはできない。", "lead": null, "title": null}, {"kind": "choice", "field": "生物", "topic": "デンプンの移動", "no": 4, "q": "光合成でつくられたデンプンが、植物体内を移動するときの様子として適切なのは、次のうちではどれか。", "choices": ["デンプンのまま師管を通って全身に運ばれる。", "水に溶けやすい物質（糖）に変えられてから師管を通って運ばれる。", "デンプンのまま道管を通って運ばれる。", "気孔から放出されて再び吸収される。"], "answer": 1, "explain": "デンプンは水に溶けにくいため、水に溶けやすい糖に変えられてから師管を通って植物体全体に運ばれる。", "lead": null, "title": null}]}, {"id": "q5", "title": "5　ミョウバンの溶解度について、次の各問に答えよ。", "lead": "ミョウバンの溶解度は、水100gに対して20°Cで12g、60°Cで57gである。60°Cの水150gにミョウバン60gを完全に溶かして水溶液をつくった。", "items": [{"kind": "choice", "field": "化学", "topic": "水溶液の濃度計算", "no": 1, "q": "この水溶液の質量パーセント濃度として適切なのは、次のうちではどれか（小数第1位を四捨五入せよ）。", "choices": ["25%", "29%", "33%", "40%"], "answer": 1, "explain": "質量パーセント濃度＝60÷(150+60)×100＝60÷210×100＝28.5...％→29%。", "lead": null, "title": null}, {"kind": "choice", "field": "化学", "topic": "溶解度・再結晶計算", "no": 2, "q": "この水溶液を20°Cまで冷やしたとき、出てくる結晶の質量として適切なのは、次のうちではどれか。", "choices": ["18g", "24g", "42g", "48g"], "answer": 2, "explain": "20°Cで水150gに溶けるミョウバンは12×1.5＝18g。もとの60gから18gを引いた42gが結晶として出てくる。1回目は「20°Cで溶ける量」を求めた時点で止まってしまっていたので、そこから「もとの量から引く」もう一段階を忘れないようにしよう。", "lead": null, "title": null}, {"kind": "write", "field": "化学", "topic": "溶解度・再結晶計算（考え方）", "no": 3, "q": "問2で、出てくる結晶の質量を求めるにはどのような計算をすればよいか。「20°Cで溶ける量」という語句を用いて、計算の考え方を簡単に書け。", "sample": "60°Cで溶かした60gから、20°Cで水150gに溶ける量（20°Cで溶ける量）を引くことで、溶けきれずに出てくる結晶の質量を求めることができる。"}, {"kind": "choice", "field": "化学", "topic": "溶解度の性質", "no": 4, "q": "ミョウバンのように温度によって溶解度が大きく変化する物質と、食塩のように温度による溶解度の変化が小さい物質がある。冷却による再結晶に適した物質として適切なのは、次のうちではどれか。", "choices": ["温度による溶解度の変化が大きい物質", "温度による溶解度の変化が小さい物質", "どちらでも同じように再結晶できる", "溶解度が最も大きい物質"], "answer": 0, "explain": "温度が下がったときに溶解度が大きく減る物質ほど、冷やしたときに結晶が多く出てくるため、冷却による再結晶に向いている。", "lead": null, "title": null}]}, {"id": "q6", "title": "6　電流回路について、次の各問に答えよ。", "lead": "抵抗の大きさが15Ωの抵抗器Pと、30Ωの抵抗器Qを用意し、電源装置で電圧を加える実験を行った。", "items": [{"kind": "choice", "field": "物理", "topic": "電流回路（直列・オームの法則）", "no": 1, "q": "抵抗器Pと抵抗器Qを直列につなぎ、回路全体に0.4Aの電流を流した。このときの電源装置の電圧として適切なのは、次のうちではどれか。", "choices": ["6V", "12V", "18V", "24V"], "answer": 2, "explain": "直列回路の合成抵抗は15＋30＝45Ω。V＝IR＝0.4×45＝18V。", "lead": null, "title": null}, {"kind": "choice", "field": "物理", "topic": "電流回路（オームの法則）", "no": 2, "q": "問1の回路で、抵抗器Pに加わる電圧として適切なのは、次のうちではどれか。", "choices": ["6V", "9V", "12V", "15V"], "answer": 0, "explain": "抵抗器Pに流れる電流は回路全体と同じ0.4A。V＝IR＝0.4×15＝6V。1回目はV＝IRの式に入れる電流を取り違えるミスがあったので、「どの部分の電流・抵抗を使うか」を確認しよう。", "lead": null, "title": null}, {"kind": "choice", "field": "物理", "topic": "電流回路（並列・合成抵抗の考え方）", "no": 3, "q": "抵抗器Pと抵抗器Qを並列につないだときの回路全体の抵抗の大きさについて述べたものとして適切なのは、次のうちではどれか。", "choices": ["抵抗器Pの抵抗（15Ω）より大きくなる。", "抵抗器Pの抵抗（15Ω）より小さくなる。", "抵抗器Qの抵抗（30Ω）より大きくなる。", "抵抗器PとQの抵抗の和（45Ω）と等しくなる。"], "answer": 1, "explain": "並列回路の合成抵抗は、つないだどの抵抗よりも小さくなる。1回目の記述で「並列につなぐと抵抗が大きくなる」と書いていたが、これは逆で、並列につなぐと電流の通り道が増えるため抵抗は小さくなる。", "lead": null, "title": null}, {"kind": "choice", "field": "物理", "topic": "電流回路（並列）", "no": 4, "q": "抵抗器Pと抵抗器Qを並列につなぎ、電源装置で6Vの電圧を加えたとき、回路全体に流れる電流の大きさとして適切なのは、次のうちではどれか。", "choices": ["0.2A", "0.4A", "0.6A", "0.8A"], "answer": 2, "explain": "並列回路では各抵抗に6Vが加わる。Pに流れる電流6÷15＝0.4A、Qに流れる電流6÷30＝0.2A。合計0.6A。", "lead": null, "title": null}, {"kind": "write", "field": "物理", "topic": "電流回路（並列と抵抗の関係）", "no": 5, "q": "抵抗を並列につなぐと、回路全体の抵抗が小さくなるのはなぜか。簡単に書け。", "sample": "並列につなぐと電流の通り道（道すじ）が増えるため、電流全体が流れやすくなり、回路全体の抵抗は小さくなるから。"}]}];
+const MARUS = ["ア","イ","ウ","エ"];
+const root = document.getElementById('quizRoot');
+
+function renderChoiceItem(sec, item) {
+  let html = `<div class="item" data-kind="choice" data-field="${item.field||''}" data-topic="${item.topic||''}" data-answer="${item.answer}" id="item-${sec.id}-${item.no}">`;
+  if (item.title) html += `<div class="item-title">${item.title}</div>`;
+  if (item.lead) html += `<div class="item-lead">${item.lead}</div>`;
+  html += `<div class="qtext"><span class="qtag">${item.field||''}</span>〔問${item.no}〕 ${item.q}</div>`;
+  item.choices.forEach((c, i) => {
+    html += `<label class="choice-label">
+      <input type="radio" name="ans-${sec.id}-${item.no}" value="${i}">
+      <span><span class="choice-mark">${MARUS[i]}</span>${c}</span>
+    </label>`;
+  });
+  html += `<div class="result-box" id="result-${sec.id}-${item.no}"></div>`;
+  html += `</div>`;
+  return html;
+}
+
+function renderWriteItem(sec, item) {
+  const uid = `${sec.id}-${item.no}`;
+  let html = `<div class="item" data-kind="write" data-field="${item.field||''}" data-topic="${item.topic||''}" id="item-${uid}">`;
+  html += `<div class="qtext"><span class="qtag">${item.field||''}</span>〔問${item.no}〕 ${item.q}</div>`;
+  html += `<textarea id="write-${uid}" placeholder="ここに答えを書いてみよう"></textarea>`;
+  html += `<div><button class="reveal-btn" onclick="toggleSample('${uid}')">解答例を見る</button>
+    <button class="self-btn" id="ok-${uid}" onclick="setSelf('${uid}','ok')">できた</button>
+    <button class="self-btn" id="ng-${uid}" onclick="setSelf('${uid}','ng')">もう一息</button></div>`;
+  html += `<div class="sample-box" id="sample-${uid}">【解答例】${item.sample}</div>`;
+  html += `</div>`;
+  return html;
+}
+
+function toggleSample(uid) {
+  const box = document.getElementById(`sample-${uid}`);
+  box.style.display = box.style.display === 'block' ? 'none' : 'block';
+}
+
+const selfRatings = {};
+function setSelf(uid, rating) {
+  selfRatings[uid] = rating;
+  const ok = document.getElementById(`ok-${uid}`);
+  const ng = document.getElementById(`ng-${uid}`);
+  ok.classList.toggle('active-ok', rating === 'ok');
+  ng.classList.toggle('active-ng', rating === 'ng');
+}
+
+SECTIONS.forEach(sec => {
+  let html = `<div class="section-card"><div class="section-title">${sec.title}</div>`;
+  if (sec.lead) html += `<div class="section-lead">${sec.lead}</div>`;
+  sec.items.forEach(item => {
+    html += item.kind === 'choice' ? renderChoiceItem(sec, item) : renderWriteItem(sec, item);
+  });
+  html += `</div>`;
+  root.insertAdjacentHTML('beforeend', html);
+});
+
+let lastResult = null;
+
+function gradeAll() {
+  let correct = 0, total = 0;
+  const byField = {};
+  const weakTopics = [];
+  const detail = [];
+
+  SECTIONS.forEach(sec => {
+    sec.items.forEach(item => {
+      const uid = `${sec.id}-${item.no}`;
+      const field = item.field || '未分類';
+      if (!byField[field]) byField[field] = {correct:0, total:0};
+
+      if (item.kind === 'choice') {
+        total++;
+        byField[field].total++;
+        const sel = document.querySelector(`input[name="ans-${uid}"]:checked`);
+        const box = document.getElementById(`result-${uid}`);
+        box.style.display = 'block';
+        const isCorrect = sel && parseInt(sel.value) === item.answer;
+        if (isCorrect) {
+          correct++;
+          byField[field].correct++;
+          box.className = 'result-box result-correct';
+          box.textContent = `正解！ 【解説】${item.explain}`;
+        } else {
+          box.className = 'result-box result-wrong';
+          const chosen = sel ? MARUS[parseInt(sel.value)] : '未回答';
+          box.textContent = `不正解（あなたの回答：${chosen} / 正解：${MARUS[item.answer]}） 【解説】${item.explain}`;
+          weakTopics.push(item.topic || field);
+        }
+        detail.push({section: sec.id, no: item.no, kind: 'choice', field, topic: item.topic,
+                      chosen: sel ? MARUS[parseInt(sel.value)] : null, correctAnswer: MARUS[item.answer], isCorrect: !!isCorrect});
+      } else {
+        const uid2 = uid;
+        const rating = selfRatings[uid2] || null;
+        if (rating === 'ng') weakTopics.push(item.topic || field);
+        detail.push({section: sec.id, no: item.no, kind: 'write', field, topic: item.topic,
+                      answerText: (document.getElementById(`write-${uid2}`)||{}).value || '', selfRating: rating});
+      }
+    });
+  });
+
+  document.getElementById('scoreNum').textContent = correct;
+  document.getElementById('scoreTotal').textContent = total;
+
+  const tbody = document.querySelector('#fieldTable tbody');
+  tbody.innerHTML = '';
+  Object.keys(byField).forEach(f => {
+    const d = byField[f];
+    const rate = d.total ? Math.round(d.correct/d.total*100) : 0;
+    tbody.insertAdjacentHTML('beforeend', `<tr><td>${f}</td><td>${d.correct}</td><td>${d.total}</td><td>${rate}%</td></tr>`);
+  });
+
+  const weakList = document.getElementById('weakList');
+  if (weakTopics.length) {
+    const uniq = [...new Set(weakTopics)];
+    weakList.innerHTML = '苦手そうな単元：' + uniq.map(t => `<span class="weak-tag">${t}</span>`).join('');
+  } else {
+    weakList.innerHTML = '';
+  }
+
+  document.getElementById('scoreSummary').style.display = 'block';
+  document.getElementById('scoreSummary').scrollIntoView({behavior:'smooth'});
+  document.getElementById('saveBtn').style.display = 'inline-block';
+
+  lastResult = {
+    examTitle: "理科オリジナル問題（都立高校入試 出題傾向分析ベース）",
+    studentName: document.getElementById('studentName').value || null,
+    date: new Date().toISOString(),
+    elapsedSeconds: elapsed,
+    choiceScore: {correct, total},
+    byField,
+    weakTopics: [...new Set(weakTopics)],
+    detail
+  };
+}
+
+async function saveResults() {
+  if (!lastResult) return;
+  const filename = `理科結果_${lastResult.date.slice(0,10)}_${String(new Date().getHours()).padStart(2,'0')}${String(new Date().getMinutes()).padStart(2,'0')}.json`;
+  const text = JSON.stringify(lastResult, null, 2);
+
+  if (window.showSaveFilePicker) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: filename,
+        types: [{description: 'JSON', accept: {'application/json': ['.json']}}]
+      });
+      const writable = await handle.createWritable();
+      await writable.write(text);
+      await writable.close();
+      alert('保存しました。次回はこのファイルをClaudeに見せてください。');
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return;
+      // フォールバックへ
+    }
+  }
+  const blob = new Blob([text], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+let timerInterval = null;
+let elapsed = 0;
+function startTimer() {
+  if (timerInterval) return;
+  timerInterval = setInterval(() => {
+    elapsed++;
+    const m = String(Math.floor(elapsed/60)).padStart(2,'0');
+    const s = String(elapsed%60).padStart(2,'0');
+    document.getElementById('timerDisplay').textContent = `${m}:${s}`;
+  }, 1000);
+}
+function resetTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+  elapsed = 0;
+  document.getElementById('timerDisplay').textContent = '00:00';
+}
+</script>
+</body>
+</html>
