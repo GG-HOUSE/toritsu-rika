@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>理科 オリジナル問題（練習用）</title>
+<style>
+  :root {
+    --main: #2f8f5f;
+    --main-dark: #1c5c3a;
+    --bg: #f4f6fb;
+    --card: #ffffff;
+    --correct: #1a7a3c;
+    --wrong: #b3261e;
+    --lead-bg: #f2f4f8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+    background: var(--bg);
+    margin: 0;
+    padding: 0;
+    color: #222;
+    line-height: 1.7;
+  }
+  header {
+    background: linear-gradient(135deg, var(--main-dark), var(--main));
+    color: white;
+    padding: 22px 16px 26px;
+    text-align: center;
+  }
+  header h1 { margin: 0 0 4px; font-size: 1.4rem; }
+  header p { margin: 0; font-size: 0.85rem; opacity: 0.9; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 16px; }
+  .timer-bar {
+    background: white; border-radius: 10px; padding: 10px 14px; margin: -16px auto 16px;
+    max-width: 760px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .timer-bar span { font-size: 0.85rem; color: #555; }
+  #timerDisplay { font-weight: bold; color: var(--main-dark); font-size: 1.1rem; }
+  .timer-bar button {
+    background: var(--main); color: white; border: none; border-radius: 6px;
+    padding: 6px 12px; font-size: 0.8rem; cursor: pointer;
+  }
+  .name-bar {
+    background: white; border-radius: 10px; padding: 10px 14px; margin: 0 auto 16px;
+    max-width: 760px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.85rem; color: #555;
+  }
+  .name-bar input { border: 1px solid #ccc; border-radius: 6px; padding: 5px 8px; font-size: 0.85rem; }
+  .section-card {
+    background: var(--card); border-radius: 12px; padding: 16px 18px; margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .section-title {
+    background: var(--main); color: white; padding: 10px 14px; border-radius: 8px;
+    font-weight: bold; font-size: 1.02rem; margin-bottom: 12px;
+  }
+  .section-lead {
+    background: var(--lead-bg); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px;
+    font-size: 0.92rem; color: #444;
+  }
+  .item { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px dashed #ddd; }
+  .item:last-child { border-bottom: none; margin-bottom: 0; }
+  .item-lead { background: var(--lead-bg); border-radius: 8px; padding: 8px 10px; font-size: 0.88rem; color: #555; margin-bottom: 6px; }
+  .item-title { font-weight: bold; font-size: 0.88rem; color: var(--main-dark); margin-bottom: 2px; }
+  .qtext { font-weight: bold; margin-bottom: 8px; font-size: 0.97rem; }
+  .qtag { display:inline-block; font-size:0.72rem; background:#eaf5ee; color:var(--main-dark); border-radius:4px; padding:1px 6px; margin-right:6px; font-weight:normal; }
+  .choice-label {
+    display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px; border-radius: 8px;
+    margin-bottom: 6px; cursor: pointer; border: 1px solid #dcebe1; transition: background 0.15s;
+  }
+  .choice-label:hover { background: #f2f9f4; }
+  .choice-label input { margin-top: 3px; flex-shrink: 0; }
+  .choice-mark { font-weight: bold; color: var(--main-dark); margin-right: 2px; }
+  textarea {
+    width: 100%; min-height: 70px; border-radius: 8px; border: 1px solid #ccc; padding: 8px;
+    font-family: inherit; font-size: 0.92rem; resize: vertical;
+  }
+  .reveal-btn, .self-btn {
+    margin-top: 6px; background: #eaf5ee; color: var(--main-dark); border: 1px solid var(--main);
+    border-radius: 6px; padding: 5px 10px; font-size: 0.8rem; cursor: pointer; margin-right: 6px;
+  }
+  .self-btn.active-ok { background: var(--correct); color: white; border-color: var(--correct); }
+  .self-btn.active-ng { background: var(--wrong); color: white; border-color: var(--wrong); }
+  .sample-box {
+    display: none; margin-top: 8px; background: #eafaf0; border-left: 4px solid var(--correct);
+    padding: 8px 10px; font-size: 0.88rem; border-radius: 4px;
+  }
+  .result-box { display: none; margin-top: 8px; padding: 8px 10px; border-radius: 6px; font-size: 0.88rem; }
+  .result-correct { background: #eafaf0; border-left: 4px solid var(--correct); color: #185c30; }
+  .result-wrong { background: #fdecea; border-left: 4px solid var(--wrong); color: #8c2a22; }
+  .grade-bar {
+    position: sticky; bottom: 0; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
+    padding: 12px 16px; text-align: center; z-index: 10; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;
+  }
+  .grade-btn {
+    background: var(--main); color: white; border: none; border-radius: 24px;
+    padding: 12px 28px; font-size: 1rem; font-weight: bold; cursor: pointer;
+  }
+  .save-btn {
+    background: #1a7a3c; color: white; border: none; border-radius: 24px;
+    padding: 12px 28px; font-size: 1rem; font-weight: bold; cursor: pointer; display:none;
+  }
+  .grade-btn:active, .save-btn:active { transform: scale(0.97); }
+  #scoreSummary {
+    max-width: 760px; margin: 0 auto 16px; background: white; border-radius: 12px; padding: 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: none;
+  }
+  #scoreSummary .headline { text-align:center; }
+  #scoreSummary .big { font-size: 2rem; font-weight: bold; color: var(--main-dark); }
+  #fieldTable { width:100%; border-collapse: collapse; margin-top: 14px; font-size: 0.85rem; }
+  #fieldTable th, #fieldTable td { border-bottom: 1px solid #eee; padding: 6px 4px; text-align: left; }
+  #fieldTable th { color: #888; font-weight: normal; }
+  .weak-tag { display:inline-block; background:#fdecea; color:var(--wrong); border-radius:4px; padding:2px 7px; margin:2px 4px 2px 0; font-size:0.78rem; }
+  .footer-note { text-align: center; font-size: 0.75rem; color: #999; padding: 20px 16px 40px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>理科　オリジナル問題　第3回（弱点特化）</h1>
+  <p>2回目の結果分析にもとづく弱点重点セット</p>
+</header>
+
+<div class="timer-bar">
+  <span>目安時間 50分　経過：<span id="timerDisplay">00:00</span></span>
+  <div>
+    <button onclick="startTimer()">開始</button>
+    <button onclick="resetTimer()">リセット</button>
+  </div>
+</div>
+
+<div class="name-bar">
+  名前：<input type="text" id="studentName" placeholder="（任意）記録用の名前">
+</div>
+
+<div class="wrap" id="quizRoot"></div>
+
+<div id="scoreSummary">
+  <div class="headline">
+    <div>選択式の正答数</div>
+    <div class="big"><span id="scoreNum">0</span> / <span id="scoreTotal">0</span></div>
+    <div style="font-size:0.85rem;color:#666;margin-top:6px;">記述問題は解答例と見比べて、問題ごとの「できた／もう一息」ボタンで自己評価してください。</div>
+  </div>
+  <table id="fieldTable"><thead><tr><th>分野</th><th>正答</th><th>問題数</th><th>正答率</th></tr></thead><tbody></tbody></table>
+  <div id="weakList" style="margin-top:10px;"></div>
+</div>
+
+<div class="grade-bar">
+  <button class="grade-btn" onclick="gradeAll()">採点する</button>
+  <button class="save-btn" id="saveBtn" onclick="saveResults()">結果を保存する</button>
+</div>
+
+<div class="footer-note">この問題は過去問そのものではなく、出題傾向分析に基づき新規作成したオリジナル問題です。保存した結果ファイルをClaudeに見せると、苦手分野に合わせた次の問題を作れます。</div>
+
+<script>
+const SECTIONS = [{"id": "q1", "title": "大問1　次の各問に答えよ。", "lead": null, "items": [{"kind": "choice", "field": "生物", "topic": "細胞分裂（染色体数の変化）", "no": 1, "q": "ある生物の体細胞の染色体数は24本である。この生物の細胞分裂について述べたものとして適切なのは、次のうちではどれか。", "choices": ["体細胞分裂でできた細胞の染色体数は12本、生殖細胞の染色体数は24本である。", "体細胞分裂でできた細胞の染色体数は24本、生殖細胞の染色体数は12本である。", "体細胞分裂でできた細胞も生殖細胞も、染色体数は12本である。", "体細胞分裂でできた細胞も生殖細胞も、染色体数は24本である。"], "answer": 1, "explain": "体細胞分裂では染色体が複製されてから分かれるので、分裂後も染色体数は変わらず24本のまま。減数分裂でできる生殖細胞だけが半分の12本になる。2回連続で間違えている単元なので、「体細胞分裂＝変わらない／減数分裂＝半分」とセットで覚えよう。", "lead": null, "title": null}, {"kind": "choice", "field": "生物", "topic": "細胞分裂（受精と染色体）", "no": 2, "q": "染色体数が24本の生物で、受精によってできた受精卵の染色体数として適切なのは、次のうちではどれか。", "choices": ["6本", "12本", "24本", "48本"], "answer": 2, "explain": "卵と精子はそれぞれ12本（半分）ずつ持ち、受精で合わさるので12＋12＝24本。親と同じ染色体数にもどる。", "lead": null, "title": null}, {"kind": "choice", "field": "物理", "topic": "光の屈折（空気→水）", "no": 3, "q": "空気中から水中へ光が進むとき、入射角が30°であった。このときの屈折角について述べたものとして適切なのは、次のうちではどれか。", "choices": ["30°より大きくなる。", "30°より小さくなる。", "30°と等しくなる。", "光は水中に入らず、すべて反射する。"], "answer": 1, "explain": "空気から水（光が進みにくい物質）に入るとき、光は境界面に近づく向きに折れ曲がるため、屈折角は入射角より小さくなる。前回間違えた問題なので「空気→水は角度が小さくなる」と覚えよう。", "lead": null, "title": null}, {"kind": "choice", "field": "物理", "topic": "光の屈折（水→空気）", "no": 4, "q": "水中から空気中へ光が進むとき、入射角と屈折角の関係として適切なのは、次のうちではどれか。", "choices": ["屈折角は入射角より大きくなる。", "屈折角は入射角より小さくなる。", "屈折角と入射角は常に等しい。", "水中から空気中へは光は進めない。"], "answer": 0, "explain": "水から空気へ出るときは逆になり、屈折角は入射角より大きくなる。入射角をさらに大きくしていくと、やがて光が全部反射する全反射が起こる。", "lead": null, "title": null}, {"kind": "choice", "field": "化学", "topic": "化学反応式（係数合わせ）", "no": 5, "q": "水の電気分解を表す化学反応式として適切なのは、次のうちではどれか。", "choices": ["H2O → H2 + O2", "2H2O → 2H2 + O2", "2H2O → H2 + 2O2", "H2O → 2H2 + O2"], "answer": 1, "explain": "左右で原子の数をそろえる。2H2O なら水素原子4個・酸素原子2個。右辺は 2H2（水素4個）+ O2（酸素2個）で一致する。前回も係数合わせで間違えているので、「左右で原子の数を数える」手順を必ずやろう。", "lead": null, "title": null}, {"kind": "choice", "field": "化学", "topic": "化学反応式（分解反応の係数）", "no": 6, "q": "炭酸水素ナトリウムを加熱すると、炭酸ナトリウム・水・二酸化炭素ができる。この反応を表す化学反応式として適切なのは、次のうちではどれか。", "choices": ["NaHCO3 → Na2CO3 + H2O + CO2", "2NaHCO3 → Na2CO3 + H2O + CO2", "2NaHCO3 → 2Na2CO3 + H2O + CO2", "NaHCO3 → Na2CO3 + 2H2O + CO2"], "answer": 1, "explain": "生成物の Na2CO3 にナトリウム原子が2個あるので、左辺の NaHCO3 は2個必要。2NaHCO3 → Na2CO3 + H2O + CO2 で左右の原子数が一致する。", "lead": null, "title": null}]}, {"id": "q2", "title": "大問2　生徒が作成したレポートを読み、次の各問に答えよ。", "lead": null, "items": [{"kind": "choice", "field": "生物", "topic": "心臓のつくり", "no": 1, "q": "肺から出た血液が最初に入る心臓の部屋として適切なのは、次のうちではどれか。", "choices": ["右心房", "右心室", "左心房", "左心室"], "answer": 2, "explain": "肺で酸素を受け取った血液は肺静脈を通って左心房に入り、左心室から全身へ送り出される。前回間違えた問題。「肺から帰る→左（左心房）」「全身から帰る→右（右心房）」と左右で覚えよう。", "lead": "ヒトの心臓は4つの部屋に分かれており、血液は「全身→心臓→肺→心臓→全身」の順に循環している。", "title": "＜レポート1＞ 心臓のつくりについて"}, {"kind": "choice", "field": "生物", "topic": "血液循環（体循環と肺循環）", "no": 2, "q": "全身から心臓にもどった血液が、肺へ送り出されるまでに通る順路として適切なのは、次のうちではどれか。", "choices": ["右心房 → 右心室 → 肺動脈", "左心房 → 左心室 → 肺動脈", "右心房 → 左心室 → 肺静脈", "左心房 → 右心室 → 肺静脈"], "answer": 0, "explain": "全身からもどった血液は右心房に入り、右心室から肺動脈を通って肺へ送られる。これが肺循環。", "lead": "全身をめぐって心臓にもどった血液は、再び肺へ送り出される。", "title": "＜レポート2＞ 血液の流れについて"}, {"kind": "choice", "field": "地学", "topic": "天体（地軸と季節）", "no": 3, "q": "夏至の日の日本（北半球）の様子として適切なのは、次のうちではどれか。", "choices": ["北半球が太陽の方向に傾いており、昼が長い。", "北半球が太陽と反対の方向に傾いており、昼が長い。", "北半球が太陽の方向に傾いており、昼が短い。", "地軸は傾いておらず、昼の長さは一年中同じである。"], "answer": 0, "explain": "夏至の日は北半球が太陽の方向に傾くため、太陽が出ている時間が長くなり昼が長い。冬至はその逆。", "lead": "日本では、夏至の日は昼が長く、冬至の日は昼が短い。これは地球が地軸を傾けたまま公転しているためである。", "title": "＜レポート3＞ 季節による昼の長さについて"}, {"kind": "choice", "field": "物理", "topic": "電流回路（並列のイメージ）", "no": 4, "q": "このたとえをもとに、抵抗を並列につないだときの回路全体の抵抗について述べたものとして適切なのは、次のうちではどれか。", "choices": ["電流の通り道が増えるので、回路全体の抵抗は小さくなる。", "電流の通り道が増えるので、回路全体の抵抗は大きくなる。", "電流の通り道が減るので、回路全体の抵抗は小さくなる。", "電流の通り道の数は、回路全体の抵抗に関係しない。"], "answer": 0, "explain": "並列につなぐと電流の通り道が増えるため、全体として電流が流れやすくなり、回路全体の抵抗は小さくなる。次の大問6の記述問題は、この考え方をそのまま文章にすればよい。", "lead": "電流の流れを、水が通る道すじにたとえて考える。道すじが増えると、水は全体として流れやすくなる。", "title": "＜レポート4＞ 並列回路について"}]}, {"id": "q3", "title": "3　季節の変化について、次の各問に答えよ。", "lead": "日本のある地点で、夏至の日と冬至の日の太陽の動きを比べた。地球は地軸を公転面に対して約23.4°傾けたまま、太陽のまわりを公転している。", "items": [{"kind": "choice", "field": "地学", "topic": "天体（南中高度と季節）", "no": 1, "q": "夏至の日の太陽の南中高度と昼の長さについて述べたものとして適切なのは、次のうちではどれか。", "choices": ["南中高度は高く、昼は長い。", "南中高度は高く、昼は短い。", "南中高度は低く、昼は長い。", "南中高度は低く、昼は短い。"], "answer": 0, "explain": "夏至は北半球が太陽の方向に傾くため、南中高度が高く、昼も長くなる。", "lead": null, "title": null}, {"kind": "choice", "field": "地学", "topic": "天体（日の出の位置）", "no": 2, "q": "夏至の日の日の出の方角について述べたものとして適切なのは、次のうちではどれか。", "choices": ["真東より北寄りからのぼる。", "真東より南寄りからのぼる。", "真東からのぼる。", "真西からのぼる。"], "answer": 0, "explain": "夏至の日は真東より北寄りからのぼり、真西より北寄りに沈む。春分・秋分の日はほぼ真東からのぼる。", "lead": null, "title": null}, {"kind": "write", "field": "地学", "topic": "天体（地軸と昼の長さ・記述）", "no": 3, "q": "夏至の日は冬至の日と比べて昼の長さが長くなる。その理由を、「地軸」という語句を用いて簡単に書け。（書き出しの例：「地球は地軸を傾けたまま公転しているため、夏至の日は北半球が」に続けて書いてみよう。）", "sample": "地球は地軸を傾けたまま公転しているため、夏至の日は北半球が太陽の方向に傾き、太陽が出ている時間が長くなるから。"}]}, {"id": "q4", "title": "4　細胞分裂の観察について、次の各問に答えよ。", "lead": "タマネギの根の先端を用いてプレパラートをつくり、顕微鏡で細胞分裂の様子を観察した。", "items": [{"kind": "choice", "field": "生物", "topic": "細胞分裂（観察部位）", "no": 1, "q": "細胞分裂の様子を観察するのに、根の先端付近を用いる理由として適切なのは、次のうちではどれか。", "choices": ["根の先端付近では細胞分裂が盛んに行われているから。", "根の先端付近の細胞は大きく、観察しやすいから。", "根の先端付近には葉緑体が多く含まれるから。", "根の先端付近は水を最も多く含むから。"], "answer": 0, "explain": "根は先端付近（成長点）で細胞分裂が盛んに行われ、細胞の数を増やしながらのびていく。", "lead": null, "title": null}, {"kind": "choice", "field": "生物", "topic": "細胞分裂（染色体の複製）", "no": 2, "q": "体細胞分裂が始まる前に、細胞の核の中で起こることとして適切なのは、次のうちではどれか。", "choices": ["染色体の数が半分になる。", "染色体が複製されて2倍になる。", "染色体が消えてなくなる。", "染色体の数は変化しない。"], "answer": 1, "explain": "分裂が始まる前に染色体が複製されて2倍になり、それが2つの細胞に等しく分配されるため、分裂後の細胞の染色体数はもとと同じになる。ここが「なぜ体細胞分裂で数が変わらないのか」の理由。", "lead": null, "title": null}, {"kind": "choice", "field": "生物", "topic": "細胞分裂（体細胞分裂と減数分裂の違い）", "no": 3, "q": "体細胞分裂と減数分裂の違いについて述べたものとして適切なのは、次のうちではどれか。", "choices": ["体細胞分裂は染色体数が半分になり、減数分裂は変わらない。", "体細胞分裂は染色体数が変わらず、減数分裂は半分になる。", "どちらも染色体数は半分になる。", "どちらも染色体数は2倍になる。"], "answer": 1, "explain": "体細胞分裂（からだをつくる分裂）では染色体数は変わらない。減数分裂（卵や精子をつくる分裂）でだけ半分になる。", "lead": null, "title": null}, {"kind": "write", "field": "生物", "topic": "細胞分裂（生殖細胞の意味・記述）", "no": 4, "q": "生殖細胞をつくるときに減数分裂が行われ、染色体数が半分になる。染色体数が半分になることが必要な理由を、「受精」という語句を用いて簡単に書け。（書き出しの例：「受精によって卵と精子の核が合わさるため、」に続けて書いてみよう。）", "sample": "受精によって卵と精子の核が合わさるため、あらかじめ染色体数を半分にしておかないと、受精卵の染色体数が親の2倍になってしまうから。"}]}, {"id": "q5", "title": "5　銅の酸化について、次の各問に答えよ。", "lead": "銅の粉末をステンレス皿にとり、じゅうぶんに加熱して完全に酸化銅に変化させる実験を行った。銅0.80gを加熱すると、酸化銅1.00gができた。", "items": [{"kind": "choice", "field": "化学", "topic": "化学反応式（酸化の係数）", "no": 1, "q": "銅が酸化して酸化銅ができる反応を表す化学反応式として適切なのは、次のうちではどれか。", "choices": ["Cu + O2 → CuO", "2Cu + O2 → 2CuO", "Cu + O → CuO2", "2Cu + 2O2 → 2CuO"], "answer": 1, "explain": "酸素は空気中では O2 という分子で存在する。左右の原子数をそろえると 2Cu + O2 → 2CuO となる。", "lead": null, "title": null}, {"kind": "choice", "field": "化学", "topic": "化学変化と質量（比の計算）", "no": 2, "q": "この実験で、銅0.80gと結びついた酸素の質量として適切なのは、次のうちではどれか。", "choices": ["0.10g", "0.20g", "0.80g", "1.00g"], "answer": 1, "explain": "結びついた酸素の質量＝酸化銅の質量－銅の質量＝1.00－0.80＝0.20g。", "lead": null, "title": null}, {"kind": "choice", "field": "化学", "topic": "化学変化と質量（比の応用）", "no": 3, "q": "同じ実験で銅2.00gを完全に酸化させたとき、できる酸化銅の質量として適切なのは、次のうちではどれか。", "choices": ["2.20g", "2.50g", "2.80g", "3.00g"], "answer": 1, "explain": "銅：酸化銅＝0.80：1.00＝4：5。銅2.00gなら酸化銅は2.00×(5÷4)＝2.50g。", "lead": null, "title": null}, {"kind": "write", "field": "化学", "topic": "質量保存の法則（記述）", "no": 4, "q": "密閉した容器の中で化学変化を起こしても、容器全体の質量は変化しない。この理由を、「原子」という語句を用いて簡単に書け。（書き出しの例：「化学変化の前後で、物質をつくる原子の」に続けて書いてみよう。）", "sample": "化学変化の前後で、物質をつくる原子の種類と数は変わらず、組み合わせが変わるだけだから。"}]}, {"id": "q6", "title": "6　電流回路について、次の各問に答えよ。", "lead": "抵抗の大きさが20Ωの抵抗器Xと、5Ωの抵抗器Yを用意し、電源装置で10Vの電圧を加える実験を行った。", "items": [{"kind": "choice", "field": "物理", "topic": "電流回路（直列）", "no": 1, "q": "抵抗器Xと抵抗器Yを直列につなぎ、10Vの電圧を加えたとき、回路全体に流れる電流の大きさとして適切なのは、次のうちではどれか。", "choices": ["0.2A", "0.4A", "0.5A", "2.0A"], "answer": 1, "explain": "直列の合成抵抗は20＋5＝25Ω。I＝V÷R＝10÷25＝0.4A。", "lead": null, "title": null}, {"kind": "choice", "field": "物理", "topic": "電流回路（並列）", "no": 2, "q": "抵抗器Xと抵抗器Yを並列につなぎ、10Vの電圧を加えたとき、回路全体に流れる電流の大きさとして適切なのは、次のうちではどれか。", "choices": ["0.5A", "1.5A", "2.0A", "2.5A"], "answer": 3, "explain": "並列では各抵抗に10Vが加わる。Xに流れる電流は10÷20＝0.5A、Yに流れる電流は10÷5＝2.0A。合計して0.5＋2.0＝2.5A。", "lead": null, "title": null}, {"kind": "choice", "field": "物理", "topic": "電力の計算", "no": 3, "q": "20Ωの抵抗器Xに10Vの電圧を加えたときに消費する電力として適切なのは、次のうちではどれか。", "choices": ["0.5W", "2W", "5W", "200W"], "answer": 2, "explain": "電流I＝10÷20＝0.5A。電力P＝VI＝10×0.5＝5W。", "lead": null, "title": null}, {"kind": "write", "field": "物理", "topic": "電流回路（並列と抵抗の関係・記述）", "no": 4, "q": "抵抗を並列につなぐと、回路全体の抵抗はもとのどの抵抗よりも小さくなる。その理由を、「電流の通り道」という語句を用いて簡単に書け。（書き出しの例：「並列につなぐと電流の通り道が」に続けて書いてみよう。）", "sample": "並列につなぐと電流の通り道が増えるため、回路全体として電流が流れやすくなり、抵抗は小さくなるから。"}]}];
+const MARUS = ["ア","イ","ウ","エ"];
+const root = document.getElementById('quizRoot');
+
+function renderChoiceItem(sec, item) {
+  let html = `<div class="item" data-kind="choice" data-field="${item.field||''}" data-topic="${item.topic||''}" data-answer="${item.answer}" id="item-${sec.id}-${item.no}">`;
+  if (item.title) html += `<div class="item-title">${item.title}</div>`;
+  if (item.lead) html += `<div class="item-lead">${item.lead}</div>`;
+  html += `<div class="qtext"><span class="qtag">${item.field||''}</span>〔問${item.no}〕 ${item.q}</div>`;
+  item.choices.forEach((c, i) => {
+    html += `<label class="choice-label">
+      <input type="radio" name="ans-${sec.id}-${item.no}" value="${i}">
+      <span><span class="choice-mark">${MARUS[i]}</span>${c}</span>
+    </label>`;
+  });
+  html += `<div class="result-box" id="result-${sec.id}-${item.no}"></div>`;
+  html += `</div>`;
+  return html;
+}
+
+function renderWriteItem(sec, item) {
+  const uid = `${sec.id}-${item.no}`;
+  let html = `<div class="item" data-kind="write" data-field="${item.field||''}" data-topic="${item.topic||''}" id="item-${uid}">`;
+  html += `<div class="qtext"><span class="qtag">${item.field||''}</span>〔問${item.no}〕 ${item.q}</div>`;
+  html += `<textarea id="write-${uid}" placeholder="ここに答えを書いてみよう"></textarea>`;
+  html += `<div><button class="reveal-btn" onclick="toggleSample('${uid}')">解答例を見る</button>
+    <button class="self-btn" id="ok-${uid}" onclick="setSelf('${uid}','ok')">できた</button>
+    <button class="self-btn" id="ng-${uid}" onclick="setSelf('${uid}','ng')">もう一息</button></div>`;
+  html += `<div class="sample-box" id="sample-${uid}">【解答例】${item.sample}</div>`;
+  html += `</div>`;
+  return html;
+}
+
+function toggleSample(uid) {
+  const box = document.getElementById(`sample-${uid}`);
+  box.style.display = box.style.display === 'block' ? 'none' : 'block';
+}
+
+const selfRatings = {};
+function setSelf(uid, rating) {
+  selfRatings[uid] = rating;
+  const ok = document.getElementById(`ok-${uid}`);
+  const ng = document.getElementById(`ng-${uid}`);
+  ok.classList.toggle('active-ok', rating === 'ok');
+  ng.classList.toggle('active-ng', rating === 'ng');
+}
+
+SECTIONS.forEach(sec => {
+  let html = `<div class="section-card"><div class="section-title">${sec.title}</div>`;
+  if (sec.lead) html += `<div class="section-lead">${sec.lead}</div>`;
+  sec.items.forEach(item => {
+    html += item.kind === 'choice' ? renderChoiceItem(sec, item) : renderWriteItem(sec, item);
+  });
+  html += `</div>`;
+  root.insertAdjacentHTML('beforeend', html);
+});
+
+let lastResult = null;
+
+function gradeAll() {
+  let correct = 0, total = 0;
+  const byField = {};
+  const weakTopics = [];
+  const detail = [];
+
+  SECTIONS.forEach(sec => {
+    sec.items.forEach(item => {
+      const uid = `${sec.id}-${item.no}`;
+      const field = item.field || '未分類';
+      if (!byField[field]) byField[field] = {correct:0, total:0};
+
+      if (item.kind === 'choice') {
+        total++;
+        byField[field].total++;
+        const sel = document.querySelector(`input[name="ans-${uid}"]:checked`);
+        const box = document.getElementById(`result-${uid}`);
+        box.style.display = 'block';
+        const isCorrect = sel && parseInt(sel.value) === item.answer;
+        if (isCorrect) {
+          correct++;
+          byField[field].correct++;
+          box.className = 'result-box result-correct';
+          box.textContent = `正解！ 【解説】${item.explain}`;
+        } else {
+          box.className = 'result-box result-wrong';
+          const chosen = sel ? MARUS[parseInt(sel.value)] : '未回答';
+          box.textContent = `不正解（あなたの回答：${chosen} / 正解：${MARUS[item.answer]}） 【解説】${item.explain}`;
+          weakTopics.push(item.topic || field);
+        }
+        detail.push({section: sec.id, no: item.no, kind: 'choice', field, topic: item.topic,
+                      chosen: sel ? MARUS[parseInt(sel.value)] : null, correctAnswer: MARUS[item.answer], isCorrect: !!isCorrect});
+      } else {
+        const uid2 = uid;
+        const rating = selfRatings[uid2] || null;
+        if (rating === 'ng') weakTopics.push(item.topic || field);
+        detail.push({section: sec.id, no: item.no, kind: 'write', field, topic: item.topic,
+                      answerText: (document.getElementById(`write-${uid2}`)||{}).value || '', selfRating: rating});
+      }
+    });
+  });
+
+  document.getElementById('scoreNum').textContent = correct;
+  document.getElementById('scoreTotal').textContent = total;
+
+  const tbody = document.querySelector('#fieldTable tbody');
+  tbody.innerHTML = '';
+  Object.keys(byField).forEach(f => {
+    const d = byField[f];
+    const rate = d.total ? Math.round(d.correct/d.total*100) : 0;
+    tbody.insertAdjacentHTML('beforeend', `<tr><td>${f}</td><td>${d.correct}</td><td>${d.total}</td><td>${rate}%</td></tr>`);
+  });
+
+  const weakList = document.getElementById('weakList');
+  if (weakTopics.length) {
+    const uniq = [...new Set(weakTopics)];
+    weakList.innerHTML = '苦手そうな単元：' + uniq.map(t => `<span class="weak-tag">${t}</span>`).join('');
+  } else {
+    weakList.innerHTML = '';
+  }
+
+  document.getElementById('scoreSummary').style.display = 'block';
+  document.getElementById('scoreSummary').scrollIntoView({behavior:'smooth'});
+  document.getElementById('saveBtn').style.display = 'inline-block';
+
+  lastResult = {
+    examTitle: "理科オリジナル問題（都立高校入試 出題傾向分析ベース）",
+    studentName: document.getElementById('studentName').value || null,
+    date: new Date().toISOString(),
+    elapsedSeconds: elapsed,
+    choiceScore: {correct, total},
+    byField,
+    weakTopics: [...new Set(weakTopics)],
+    detail
+  };
+}
+
+async function saveResults() {
+  if (!lastResult) return;
+  const filename = `理科結果_${lastResult.date.slice(0,10)}_${String(new Date().getHours()).padStart(2,'0')}${String(new Date().getMinutes()).padStart(2,'0')}.json`;
+  const text = JSON.stringify(lastResult, null, 2);
+
+  if (window.showSaveFilePicker) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: filename,
+        types: [{description: 'JSON', accept: {'application/json': ['.json']}}]
+      });
+      const writable = await handle.createWritable();
+      await writable.write(text);
+      await writable.close();
+      alert('保存しました。次回はこのファイルをClaudeに見せてください。');
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return;
+      // フォールバックへ
+    }
+  }
+  const blob = new Blob([text], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+let timerInterval = null;
+let elapsed = 0;
+function startTimer() {
+  if (timerInterval) return;
+  timerInterval = setInterval(() => {
+    elapsed++;
+    const m = String(Math.floor(elapsed/60)).padStart(2,'0');
+    const s = String(elapsed%60).padStart(2,'0');
+    document.getElementById('timerDisplay').textContent = `${m}:${s}`;
+  }, 1000);
+}
+function resetTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+  elapsed = 0;
+  document.getElementById('timerDisplay').textContent = '00:00';
+}
+</script>
+</body>
+</html>
